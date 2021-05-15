@@ -38,6 +38,10 @@ class Game {
     start() {
         walmart.classList.add("hidden");
         fade();
+        simonText.classList.add("hidden");
+        for (let i = 0; i < tiles.length; i++) {
+            tiles[i].classList.remove("dark");
+        }
         setTimeout(() => {
             simonCharacter.classList.remove("hidden");
             deleteAnimation("lost");
