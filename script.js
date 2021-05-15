@@ -1,4 +1,5 @@
 let allowClicks = true;
+let highscore = 0;
 let simonText = document.querySelector(".simonText");
 let gameBody = document.querySelector(".game");
 let innerTileBlue = document.querySelector(".b");
@@ -11,24 +12,110 @@ let theme3 = document.querySelector(".theme3");
 let theme4 = document.querySelector(".theme4")
 let HTML = document.querySelector("html");
 let body = document.querySelector("body");
-
-theme1.addEventListener("click", () => {changeTheme(theme1)})
-theme2.addEventListener("click", () => {changeTheme(theme2)})
-theme3.addEventListener("click", () => {changeTheme(theme3)})
-theme4.addEventListener("click", () => {changeTheme(theme4)})
-
-// let theme1 = document.querySelector(".theme1");
+let highscoreHTML = document.querySelector(".visual");
 let inners = [innerTileBlue, innerTileGreen, innerTileYellow, innerTileRed];
-
 let startBtn = document.querySelector(".start");
 let roundHTML = document.querySelector(".round");
 let levelClearedHTML = document.querySelector(".level-clear");
-
 let redTile = document.querySelector(".red");
 let greenTile = document.querySelector(".green");
 let blueTile = document.querySelector(".blue");
 let yellowTile = document.querySelector(".yellow");
 let tiles = [blueTile, greenTile, yellowTile, redTile];
+let simonCharacter = document.querySelector("img");
+let walmart = document.querySelector("a");
+theme1.addEventListener("click", () => {changeTheme(theme1)})
+theme2.addEventListener("click", () => {changeTheme(theme2)})
+theme3.addEventListener("click", () => {changeTheme(theme3)})
+theme4.addEventListener("click", () => {changeTheme(theme4)})
+
+class Game {
+    constructor () {
+        this.pattern = [];
+        this.currentIndex = 0;
+        this.round = 1;
+    }
+    start() {
+        walmart.classList.add("hidden");
+        fade();
+        setTimeout(() => {
+            simonCharacter.classList.remove("hidden");
+            deleteAnimation("lost");
+            allowClicks = true;
+            simonText.innerHTML = "SIMON";
+            simonText.classList.add("hidden");
+            this.nextRound();
+        }, 1000);
+    }
+
+    loseGame() {
+        addAnimation("lost");
+        stopClicks();
+        allowClicks = false;
+        loseHTML(this.round);
+        this.pattern = [];
+        this.currentIndex = 0;
+        this.round = 1;
+    }
+
+    checkGuess (color) {
+        if (this.pattern[this.currentIndex] != color) {
+            this.loseGame();
+        } else {
+            this.currentIndex++;
+            if (this.currentIndex === this.pattern.length) {
+                this.levelCleared();
+            }
+        }
+    }
+
+    randomTile () {
+        let val = Math.floor(Math.random() * 4);
+        this.pattern.push(val);
+    }
+
+    levelCleared() {
+        this.round++;
+        if (this.round > highscore) {
+            highscore = this.round;
+            updateHighscore(this.round);
+        }
+        this.currentIndex = 0;
+        setTimeout(() => {
+            updateRound(this.round);
+            clearedAnimation();
+        }, 1500);
+        setTimeout( () => {
+            this.nextRound();
+        }, 3400)
+    }
+
+    nextRound () {
+        let form = "normal";
+        addAnimation(form);
+        stopClicks();
+        this.randomTile();
+        for (let i = 0; i < this.pattern.length; i++) {
+            setTimeout( () => {startClicks(); deleteAnimation(form)}, 1500 * this.pattern.length - 1);
+            setTimeout( () => {
+                highlightTile(inners[this.pattern[i]]);
+            }, 1500 * i)
+        }
+    }
+
+
+}
+
+let simon = new Game();
+
+startBtn.addEventListener("click", beginGame);
+for (let i = 0; i < tiles.length; i++) {
+    tiles[i].addEventListener("click", (event) => {
+        event.stopPropagation();
+        stopClicks();
+        clickTile(i)
+    });
+}
 
 function changeTheme(theme) {
     let val = theme.getAttribute("set");
@@ -63,82 +150,28 @@ function changeTheme(theme) {
     }
 }
 
-class Game {
-    constructor () {
-        this.pattern = [];
-        this.currentIndex = 0;
-        this.round = 1;
+function addAnimation (form) {
+    if (form == "normal") {
+        simonCharacter.classList.add("animating");
+    } else {
+        simonCharacter.classList.add("loseAnimating");
     }
-    start() {
-        allowClicks = true;
-        simonText.innerHTML = "SIMON";
-        simonText.classList.add("hidden");
-        for (let i =0; i < tiles.length; i++) {
-            tiles[i].classList.remove("dark");
-        }
-        this.nextRound();
+}
+function deleteAnimation (form) {
+    if (form == "normal") {
+        simonCharacter.classList.remove("animating");
+    } else {
+        simonCharacter.classList.remove("loseAnimating");
     }
-
-    loseGame() {
-        stopClicks();
-        allowClicks = false;
-        loseHTML(this.round);
-        this.pattern = [];
-        this.currentIndex = 0;
-        this.round = 0;
-    }
-
-    checkGuess (color) {
-        if (this.pattern[this.currentIndex] != color) {
-            this.loseGame();
-        } else {
-            this.currentIndex++;
-            if (this.currentIndex === this.pattern.length) {
-                this.levelCleared();
-            }
-        }
-    }
-
-    randomTile () {
-        let val = Math.floor(Math.random() * 4);
-        this.pattern.push(val);
-    }
-
-    levelCleared() {
-        this.round++;
-        this.currentIndex = 0;
-        setTimeout(() => {
-            updateRound(this.round);
-            clearedAnimation();
-        }, 1500);
-        setTimeout( () => {
-            this.nextRound();
-        }, 3400)
-    }
-
-    nextRound () {
-        stopClicks();
-        this.randomTile();
-        for (let i = 0; i < this.pattern.length; i++) {
-            setTimeout( () => {startClicks()}, 1500 * this.pattern.length - 1);
-            setTimeout( () => {
-                highlightTile(inners[this.pattern[i]]);
-            }, 1500 * i)
-        }
-    }
-
-
 }
 
-let simon = new Game();
-
-startBtn.addEventListener("click", beginGame);
-for (let i = 0; i < tiles.length; i++) {
-    tiles[i].addEventListener("click", (event) => {
-        event.stopPropagation();
-        stopClicks();
-        clickTile(i)
-    });
+function updateHighscore (score) {
+    highscoreHTML.innerHTML = "";
+    for (let i = 1; i < score; i++) {
+        let scoreBar = document.createElement("hr");
+        scoreBar.classList.add("lev");
+        highscoreHTML.appendChild(scoreBar);
+    }
 }
 
 function loseHTML(round) {
@@ -148,6 +181,13 @@ function loseHTML(round) {
     }
     simonText.innerHTML = `The House Always Wins: <br> You Won ${round - 1} Rounds.`;
     startBtn.addEventListener("click", beginGame);
+}
+
+function fade() {
+    document.querySelector("html").classList.add("fade");
+    setTimeout(() => {
+        document.querySelector("html").classList.remove("fade");
+    }, 1000);
 }
 
 function clearedAnimation() {
