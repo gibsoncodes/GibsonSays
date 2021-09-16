@@ -23,7 +23,9 @@ let blueTile = document.querySelector(".blue");
 let yellowTile = document.querySelector(".yellow");
 let tiles = [blueTile, greenTile, yellowTile, redTile];
 let simonCharacter = document.querySelector("img");
-let walmart = document.querySelector("a");
+let colorList = [[],[],[],[]]
+
+
 theme1.addEventListener("click", () => {changeTheme(theme1)})
 theme2.addEventListener("click", () => {changeTheme(theme2)})
 theme3.addEventListener("click", () => {changeTheme(theme3)})
@@ -36,7 +38,6 @@ class Game {
         this.round = 1;
     }
     start() {
-        walmart.classList.add("hidden");
         fade();
         simonText.classList.add("hidden");
         for (let i = 0; i < tiles.length; i++) {
